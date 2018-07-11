@@ -1,0 +1,8 @@
+<h1 mat-dialog-title>{{data.name}}?</h1>
+<div mat-dialog-content>
+    <p>Are you sure to {{data.name}}?</p>
+</div>
+<div mat-dialog-actions>
+    <button mat-button (click)="onNoClick()">Cancel</button>
+    <button mat-button color='warn' [mat-dialog-close]="data" cdkFocusInitial>{{data.name}}</button>
+</div>

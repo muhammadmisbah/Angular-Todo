@@ -1,0 +1,43 @@
+<div class="example-container">
+    <mat-card>
+        <form>
+            <mat-form-field>
+                <input matInput #input maxlength="30" placeholder="Enter Task" [(ngModel)]="val" name="task" />
+                <mat-hint align="end">{{input.value?.length || 0}}/30</mat-hint>
+            </mat-form-field>
+            <button mat-raised-button color="primary" (click)="put()" type="submit">Add</button>
+        </form>
+    </mat-card>
+</div>
+<div class="example-container">
+    <mat-card>
+        <mat-accordion class="example-headers-align">
+            <mat-expansion-panel *ngFor="let todo of arr; index as i" hideToggle>
+                <mat-expansion-panel-header>
+                    <mat-panel-title>
+                        {{i + 1 + ")"}} &nbsp; {{todo.val}}
+                    </mat-panel-title>
+                    <!-- <mat-panel-description>
+                Type your name and age
+            </mat-panel-description> -->
+                    <mat-icon>edit</mat-icon>
+                </mat-expansion-panel-header>
+
+                <!-- <mat-form-field>
+            <input matInput placeholder="First name">
+        </mat-form-field> -->
+                <mat-form-field *ngIf="arr[i].edit;">
+                    <input matInput [(ngModel)]="editedVal" autofocus placeholder="Edit your task" />
+                    <mat-hint align="end">{{input.value?.length || 0}}/30</mat-hint>
+                </mat-form-field>
+                <mat-action-row>
+                    <button mat-stroked-button color="primary" (click)="openDialog(i, 'Edit')" *ngIf="arr[i].edit">Add</button>
+                    <button mat-raised-button (click)="edit(i)">{{ arr[i].edit ? 'Cancel' : 'Edit' }}</button>
+                    <button mat-button color="warn" (click)="openDialog(i, 'Delete')" *ngIf="!arr[i].edit">Delete</button>
+                </mat-action-row>
+            </mat-expansion-panel>
+        </mat-accordion>
+    </mat-card>
+</div>
+<!-- </ol> -->
+<!-- <p>{{ data1 }}</p> -->
