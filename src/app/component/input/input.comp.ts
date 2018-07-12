@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { SharedService } from '../../providers/sharedService';
 import { MatDialog } from '@angular/material';
 import { DialogComp } from '../dialog/dialog.comp';
+import * as firebase from "firebase";
 
 
 @Component({
@@ -24,7 +25,12 @@ export class InputComponent implements OnInit {
     ngOnInit(): void {
         //Called after the constructor, initializing input properties, and the first call to ngOnChanges.
         //Add 'implements OnInit' to the class.
-        this.arr = localStorage.getItem('todo') ? JSON.parse(localStorage.getItem('todo')) : []
+        firebase.database().ref("items").on("value", (obj) => {
+            console.log("Initial State", obj.val() && obj.val().arr);
+            this.arr = obj.val() ? obj.val().arr : [];
+        }
+        )
+        // this.arr = localStorage.getItem('todo') ? JSON.parse(localStorage.getItem('todo')) : []
     }
 
     public put(): void {
@@ -33,7 +39,10 @@ export class InputComponent implements OnInit {
                 val: this.val,
                 edit: false
             });
-            localStorage.setItem("todo", JSON.stringify(this.arr))
+            firebase.database().ref("items").set({
+                arr: this.arr
+            })
+            // localStorage.setItem("todo", JSON.stringify(this.arr))
             this.val = "";
         }
         else {
@@ -42,7 +51,10 @@ export class InputComponent implements OnInit {
     }
     public del(i: number): void {
         this.arr.splice(i, 1)
-        localStorage.setItem("todo", JSON.stringify(this.arr))
+        firebase.database().ref("items").set({
+            arr: this.arr
+        })
+        // localStorage.setItem("todo", JSON.stringify(this.arr))
     }
     public edit(i: number): void {
         if (this.arr[i].edit) {
@@ -58,7 +70,10 @@ export class InputComponent implements OnInit {
     public edited(i: number): void {
         if (this.editedVal) {
             this.arr[i] = { val: this.editedVal, edit: false };
-            localStorage.setItem("todo", JSON.stringify(this.arr))
+            firebase.database().ref("items").set({
+                arr: this.arr
+            })
+            // localStorage.setItem("todo", JSON.stringify(this.arr))
         }
         else {
             this.ss.showSnackBar("You can't add empty field")
