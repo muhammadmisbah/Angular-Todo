@@ -14,20 +14,17 @@ export class InputComponent implements OnInit {
 
     constructor(public ss: SharedService, public dialog: MatDialog) { }
 
-    // public name: string;
-    // public action: number;
-
     public title: string = 'app';
     public val: any;
     public editedVal: string;
-    public arr: { val: string, edit: boolean }[] = [];
+    public arr: [string, { val: string, edit: boolean }][] = [];
 
     ngOnInit(): void {
         //Called after the constructor, initializing input properties, and the first call to ngOnChanges.
         //Add 'implements OnInit' to the class.
         firebase.database().ref("items").on("value", (obj) => {
-            console.log("Initial State", obj.val() && obj.val().arr);
-            this.arr = obj.val() ? obj.val().arr : [];
+            console.log("Initial State", obj.val() && Object.entries(obj.val()));
+            this.arr = obj.val() ? Object.entries(obj.val()) : [];
         }
         )
         // this.arr = localStorage.getItem('todo') ? JSON.parse(localStorage.getItem('todo')) : []
@@ -35,45 +32,45 @@ export class InputComponent implements OnInit {
 
     public put(): void {
         if (this.val) {
-            this.arr.push({
+            // this.arr.push({
+            //     val: this.val,
+            //     edit: false
+            // });
+            // localStorage.setItem("todo", JSON.stringify(this.arr))
+            firebase.database().ref("items").push({
                 val: this.val,
                 edit: false
-            });
-            firebase.database().ref("items").set({
-                arr: this.arr
-            })
-            // localStorage.setItem("todo", JSON.stringify(this.arr))
-            this.val = "";
+            }).then(() => this.val = "")
+
         }
         else {
             this.ss.showSnackBar("You can't add empty field")
         }
     }
     public del(i: number): void {
-        this.arr.splice(i, 1)
-        firebase.database().ref("items").set({
-            arr: this.arr
-        })
+        // this.arr.splice(i, 1)
         // localStorage.setItem("todo", JSON.stringify(this.arr))
+        firebase.database().ref("items/" + this.arr[i][0]).remove()
     }
     public edit(i: number): void {
-        if (this.arr[i].edit) {
-            this.arr[i].edit = false;
+        if (this.arr[i][1].edit) {
+            this.arr[i][1].edit = false;
         } else {
             for (let x in this.arr) {
-                this.arr[x].edit = false;
+                this.arr[x][1].edit = false;
             }
-            this.arr[i].edit = true
+            this.arr[i][1].edit = true
         }
-        this.editedVal = this.arr[i].val;
+        this.editedVal = this.arr[i][1].val;
     }
     public edited(i: number): void {
         if (this.editedVal) {
-            this.arr[i] = { val: this.editedVal, edit: false };
-            firebase.database().ref("items").set({
-                arr: this.arr
-            })
+            // this.arr[i][1] = { val: this.editedVal, edit: false };
             // localStorage.setItem("todo", JSON.stringify(this.arr))
+            firebase.database().ref("items/" + this.arr[i][0]).set({
+                val: this.editedVal,
+                edit: false
+            })
         }
         else {
             this.ss.showSnackBar("You can't add empty field")
@@ -88,8 +85,7 @@ export class InputComponent implements OnInit {
         });
 
         dialogRef.afterClosed().subscribe(result => {
-            console.log('The dialog was closed');
-            // this.action = result;
+            // console.log('The dialog was closed');
             if (result.name === "Delete") {
                 this.del(result.action);
             }
