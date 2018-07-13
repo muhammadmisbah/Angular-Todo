@@ -24,6 +24,7 @@ import { InputComponent } from './component/input/input.comp';
  */
 import { SharedService } from './providers/sharedService';
 import { DialogComp } from './component/dialog/dialog.comp';
+import { FirebaseService } from './providers/firebaseServices';
 
 @NgModule({
   declarations: [
@@ -48,7 +49,8 @@ import { DialogComp } from './component/dialog/dialog.comp';
     MatDialogModule
   ],
   providers: [
-    SharedService
+    SharedService,
+    FirebaseService
   ],
   entryComponents: [DialogComp],
   bootstrap: [AppComponent]

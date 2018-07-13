@@ -1,8 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { SharedService } from '../../providers/sharedService';
 import { MatDialog } from '@angular/material';
-import { DialogComp } from '../dialog/dialog.comp';
-import * as firebase from "firebase";
+import { FirebaseService } from '../../providers/firebaseServices';
 
 
 @Component({
@@ -12,7 +11,7 @@ import * as firebase from "firebase";
 })
 export class InputComponent implements OnInit {
 
-    constructor(public ss: SharedService, public dialog: MatDialog) { }
+    constructor(public service: SharedService, public dialog: MatDialog, public firebaseService: FirebaseService) { }
 
     public title: string = 'app';
     public val: any;
@@ -22,7 +21,9 @@ export class InputComponent implements OnInit {
     ngOnInit(): void {
         //Called after the constructor, initializing input properties, and the first call to ngOnChanges.
         //Add 'implements OnInit' to the class.
-        firebase.database().ref("items").on("value", (obj) => {
+
+        // importing saved data from database
+        this.firebaseService.ref.on("value", (obj) => {
             console.log("Initial State", obj.val() && Object.entries(obj.val()));
             this.arr = obj.val() ? Object.entries(obj.val()) : [];
         }
@@ -30,6 +31,7 @@ export class InputComponent implements OnInit {
         // this.arr = localStorage.getItem('todo') ? JSON.parse(localStorage.getItem('todo')) : []
     }
 
+    // adding method
     public put(): void {
         if (this.val) {
             // this.arr.push({
@@ -37,21 +39,32 @@ export class InputComponent implements OnInit {
             //     edit: false
             // });
             // localStorage.setItem("todo", JSON.stringify(this.arr))
-            firebase.database().ref("items").push({
-                val: this.val,
-                edit: false
-            }).then(() => this.val = "")
 
+            // adding new task on database
+            this.firebaseService.push({ val: this.val, edit: false }).then(
+                (res) => res.key ? (this.val = "", console.log(res.key, "res")) : console.log(res)
+            )
         }
         else {
-            this.ss.showSnackBar("You can't add empty field")
+            //showing message if input is empty
+            this.service.showSnackBar("You can't add empty field")
         }
     }
+
+    // removing method
     public del(i: number): void {
         // this.arr.splice(i, 1)
         // localStorage.setItem("todo", JSON.stringify(this.arr))
-        firebase.database().ref("items/" + this.arr[i][0]).remove()
+
+        // removing item from database
+        this.firebaseService.remove(this.arr[i][0])
     }
+
+    public delAll(): void {
+        this.firebaseService.removeAll();
+    }
+
+    // showing edit input method
     public edit(i: number): void {
         if (this.arr[i][1].edit) {
             this.arr[i][1].edit = false;
@@ -63,31 +76,30 @@ export class InputComponent implements OnInit {
         }
         this.editedVal = this.arr[i][1].val;
     }
+
+    // edit method
     public edited(i: number): void {
         if (this.editedVal) {
             // this.arr[i][1] = { val: this.editedVal, edit: false };
             // localStorage.setItem("todo", JSON.stringify(this.arr))
-            firebase.database().ref("items/" + this.arr[i][0]).set({
-                val: this.editedVal,
-                edit: false
-            })
+
+            // set edited task on database
+            this.firebaseService.set(this.arr[i][0], { val: this.editedVal, edit: false })
         }
         else {
-            this.ss.showSnackBar("You can't add empty field")
+            this.service.showSnackBar("You can't add empty field")
         }
     }
 
     // Mat Dialog
-    openDialog(i: number, name: string): void {
-        const dialogRef = this.dialog.open(DialogComp, {
-            width: '250px',
-            data: { name: name, action: i }
-        });
-
-        dialogRef.afterClosed().subscribe(result => {
+    confirmation(i: number, name: string): void {
+        this.service.openDialog(i, name).subscribe(result => {
             // console.log('The dialog was closed');
             if (result.name === "Delete") {
                 this.del(result.action);
+            }
+            else if (result.action === -1) {
+                this.delAll()
             }
             else {
                 this.edited(result.action);
