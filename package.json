@@ -8,7 +8,7 @@
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e",
-    "build.prod.aot": "ng build --prod=true --aot=true --progress=true --build-optimizer=true --source-map=false --output-path='abc' && firebase deploy"
+    "build.prod.aot": "ng build --prod=true --aot=true --progress=true --build-optimizer=true --source-map=false --output-path=abc && firebase deploy"
   },
   "private": true,
   "dependencies": {
